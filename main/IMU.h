@@ -8,14 +8,20 @@
 
 #include "D3.h"
 
+#define G_LED_PORT 8
+#define BUZZER1_PORT 12
+
 class D3;
 
 class IMU : public MPU9250_asukiaaa {
     private:
-        D3 calibratedAccelData();
         float accelXCalibrationValue, accelYCalibrationValue, accelZCalibrationValue;
+        float gyroXCalibrationValue, gyroYCalibrationValue, gyroZCalibrationValue;
     public:
         IMU();
+        D3 calibratedAccelData();
+        D3 IMU::calibratedGyroData();
+        float getSpeed();
         void output();
 };
 
