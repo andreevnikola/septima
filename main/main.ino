@@ -34,7 +34,8 @@ void setup() {
 }
 
 void loop() {
+  flightComputer->getIMU()->updateSensors();
   flightComputer->getIMU()->output();
   flightComputer->getTVC()->correct();
-  delay(350);
+  delay(500);
 }

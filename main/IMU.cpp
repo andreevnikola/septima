@@ -10,6 +10,7 @@ IMU::IMU()
     setWire(&Wire);
     beginAccel();
     beginGyro();
+    beginMag();
 
     accelUpdate();
     gyroUpdate();
@@ -42,27 +43,46 @@ D3 IMU::calibratedGyroData(){
 }
 
 float IMU::getSpeed() {
-    D3 accel = calibratedAccelData();
-    return sqrt(accel.X * accel.X + accel.Y * accel.Y + accel.Z * accel.Z) * 9.8;
+    return sqrt(accData.X * accData.X + accData.Y * accData.Y + accData.Z * accData.Z) * 9.8;
+}
+
+float IMU::getPitch() { return pitchKalmanFilter.updateEstimate(atan2((-accData.X), sqrt(accData.Y * accData.Y + accData.Z * accData.Z)) * 57.3); }
+float IMU::getRoll() { return atan2(accData.Y, accData.Z) * 57.3; }
+float IMU::getYaw() { return atan(accData.Z / sqrt(accData.X * accData.X + accData.Z * accData.Z)) * 57.3; }
+
+void IMU::updateSensors() {
+    accelUpdate();
+    gyroUpdate();
+
+    accData = calibratedAccelData();
+    gyroData = calibratedGyroData();
+    speed = getSpeed();
+
+    pitch = getPitch();
+    roll = getRoll();
+    yaw = getYaw();
 }
 
 void IMU::output()
 {
-    accelUpdate();
-    D3 accData = calibratedAccelData();
-    gyroUpdate();
-    D3 gyroData = calibratedGyroData();
-    const float speed = getSpeed();
-
-    // Accelerometer
     Serial.println("    ");
     Serial.println("Accel:");
     Serial.println(accData.X);
     Serial.println(accData.Y);
     Serial.println(accData.Z);
+    Serial.println("Pitch: " + String(getPitch()) + "°");
+    Serial.println("Yaw: " + String(getYaw()) + "°");
+    Serial.println("Roll: " + String(getRoll()) + "°");
     Serial.println("SPEED " + String(speed) + "m/s");
-    Serial.println("MAG:");
+    Serial.println("Gyro:");
     Serial.println(gyroData.X);
     Serial.println(gyroData.Y);
     Serial.println(gyroData.Z);
+
+    magUpdate();
+    Serial.println("MAG:");
+    Serial.println(magX());
+    Serial.println(magY());
+    Serial.println(magZ());
+    Serial.println(magHorizDirection());
 }
